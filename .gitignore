@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+backend/app/school.db
+backend/app/uploads/*
+!backend/app/uploads/.gitkeep
+.env
+backend/.env
+frontend/node_modules/
+frontend/dist/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
