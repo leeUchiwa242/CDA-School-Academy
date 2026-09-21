@@ -46,15 +46,15 @@ class BulletinPDF(FPDF):
 
     def header(self):
         self.set_fill_color(*INK)
-        self.rect(0, 0, PAGE_W, 24, 'F')
+        self.rect(0, 0, PAGE_W, 20, 'F')
         self.set_text_color(*WHITE)
-        self.set_xy(0, 6)
-        self.set_font('helvetica', 'B', 15)
-        self.cell(PAGE_W, 7, f"BULLETIN DE NOTES - {self.term_label.upper()}", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        self.set_font('helvetica', '', 9.5)
-        self.set_xy(0, 15)
+        self.set_xy(0, 4.5)
+        self.set_font('helvetica', 'B', 14)
+        self.cell(PAGE_W, 6.5, f"BULLETIN DE NOTES - {self.term_label.upper()}", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.set_font('helvetica', '', 9)
+        self.set_xy(0, 12.5)
         self.cell(PAGE_W, 5, f"Année scolaire : {self.year_label}", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        self.set_y(30)
+        self.set_y(25)
 
     def footer(self):
         self.set_y(-16)
@@ -69,14 +69,14 @@ class BulletinPDF(FPDF):
 
     def section_title(self, text, color=SLATE_900):
         self.set_x(MARGIN)
-        self.set_font('helvetica', 'B', 11)
+        self.set_font('helvetica', 'B', 10)
         self.set_text_color(*color)
-        self.cell(0, 7, text.upper(), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 5.5, text.upper(), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_draw_color(*SLATE_400)
         self.set_line_width(0.6)
-        y = self.get_y() + 0.5
+        y = self.get_y() + 0.3
         self.line(MARGIN, y, MARGIN + 26, y)
-        self.ln(4)
+        self.ln(2.5)
 
     def rounded_card(self, x, y, w, h, fill_color=WHITE, border_color=SLATE_200, radius=3):
         self.set_fill_color(*fill_color)
@@ -93,12 +93,12 @@ def _wrapped_lines(pdf, w, text, font=('helvetica', '', 9)):
     return lines or ['-']
 
 
-def _table_row(pdf, x_positions, widths, values, font, text_color, fill=None, line_h=4.6, aligns=None):
+def _table_row(pdf, x_positions, widths, values, font, text_color, fill=None, line_h=3.8, aligns=None):
     """Draws one wrapped, equal-height table row (never overlaps, never gets clipped)."""
     aligns = aligns or ['L'] * len(values)
     wrapped = [_wrapped_lines(pdf, widths[i] - 1.6, str(values[i]), font) for i in range(len(values))]
     n_lines = max(len(w) for w in wrapped)
-    row_h = n_lines * line_h + 2
+    row_h = n_lines * line_h + 1.4
 
     if pdf.will_page_break(row_h):
         pdf.add_page()
@@ -125,7 +125,7 @@ def _grades_table_header(pdf, leaf_x, leaf_w):
     """Two-level header: Matière | Évaluations{Devoirs,Examens} | Moy Élève | Classe{Min,Max,Moy} | Appréciations"""
     pdf.set_font('helvetica', 'B', 8)
     y0 = pdf.get_y()
-    h1, h2 = 6, 6
+    h1, h2 = 5, 5
 
     def tall(idx, label):
         pdf.set_fill_color(*INK)
@@ -175,7 +175,7 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
     pdf = BulletinPDF()
     pdf.term_label = bulletin_data['term']
     pdf.year_label = bulletin_data['academic_year']
-    pdf.set_auto_page_break(auto=True, margin=22)
+    pdf.set_auto_page_break(auto=True, margin=12)
     pdf.alias_nb_pages()
     pdf.add_page()
 
@@ -194,26 +194,26 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
         photo_path = os.path.join(upload_folder, filename)
         if os.path.exists(photo_path):
             try:
-                pdf.image(photo_path, x=PAGE_W - MARGIN - 24, y=block_y, w=24, h=24)
+                pdf.image(photo_path, x=PAGE_W - MARGIN - 20, y=block_y, w=20, h=20)
                 photo_drawn = True
             except Exception:
                 pass
 
-    label_w = 32
-    info_w = CONTENT_W - (28 if photo_drawn else 0) - label_w
+    label_w = 30
+    info_w = CONTENT_W - (24 if photo_drawn else 0) - label_w
     full_name = f"{student_info['first_name']} {student_info['last_name']}"
     rows = [("Nom :", full_name), ("Classe :", student_info.get('class_name') or '-')]
     pdf.set_xy(MARGIN, block_y)
     for label, value in rows:
-        pdf.set_font('helvetica', 'B', 10)
+        pdf.set_font('helvetica', 'B', 9.5)
         pdf.set_text_color(*SLATE_900)
         pdf.set_x(MARGIN)
-        pdf.cell(label_w, 6.5, label)
-        pdf.set_font('helvetica', '', 10)
-        pdf.cell(info_w, 6.5, value, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(label_w, 5.8, label)
+        pdf.set_font('helvetica', '', 9.5)
+        pdf.cell(info_w, 5.8, value, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_x(MARGIN)
 
-    pdf.set_y(max(pdf.get_y(), block_y + (26 if photo_drawn else 0)) + 6)
+    pdf.set_y(max(pdf.get_y(), block_y + (20 if photo_drawn else 0)) + 4)
 
     # ------------------------------------------------------------------
     # 2. Compact key-figures strip: Moyenne générale / Rang / Moyenne de classe
@@ -224,24 +224,24 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
         ("Rang", rank_str),
         ("Moyenne de classe", f"{calc['class_average']:.2f} / 100"),
     ]
-    gap = 5
+    gap = 4
     card_w = (CONTENT_W - gap * 2) / 3
-    strip_h = 16
+    strip_h = 13
     if pdf.will_page_break(strip_h):
         pdf.add_page()
     strip_y = pdf.get_y()
     for i, (label, value) in enumerate(strip_items):
         cx = MARGIN + i * (card_w + gap)
         pdf.rounded_card(cx, strip_y, card_w, strip_h, fill_color=SLATE_50, border_color=SLATE_200)
-        pdf.set_xy(cx + 5, strip_y + 2.5)
-        pdf.set_font('helvetica', '', 7)
+        pdf.set_xy(cx + 5, strip_y + 2)
+        pdf.set_font('helvetica', '', 6.5)
         pdf.set_text_color(*SLATE_600)
-        pdf.cell(card_w - 8, 3.5, label.upper(), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(card_w - 8, 3, label.upper(), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_x(cx + 5)
-        pdf.set_font('helvetica', 'B', 10.5)
+        pdf.set_font('helvetica', 'B', 10)
         pdf.set_text_color(*SLATE_900)
-        pdf.cell(card_w - 8, 6, str(value), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.set_y(strip_y + strip_h + 8)
+        pdf.cell(card_w - 8, 5.5, str(value), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_y(strip_y + strip_h + 5)
 
     # ------------------------------------------------------------------
     # 3. Grades table (Matière / Évaluations / Moy. Élève / Classe Min-Max-Moy / Appréciations)
@@ -274,27 +274,27 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
         zebra = not zebra
 
     # "Moyenne générale" highlighted footer row, full width
-    footer_h = 8
+    footer_h = 6.5
     if pdf.will_page_break(footer_h):
         pdf.add_page()
     fy = pdf.get_y()
     pdf.set_fill_color(*INK)
     pdf.rect(MARGIN, fy, CONTENT_W, footer_h, 'F')
     pdf.set_text_color(*WHITE)
-    pdf.set_font('helvetica', 'B', 9.5)
-    pdf.set_xy(MARGIN + 4, fy + 1.8)
-    pdf.cell(CONTENT_W - 40, 5, "MOYENNE GÉNÉRALE", align='L')
-    pdf.set_xy(MARGIN, fy + 1.8)
-    pdf.cell(CONTENT_W - 4, 5, f"{calc['average']:.2f} / 100", align='R')
-    pdf.set_y(fy + footer_h + 3)
+    pdf.set_font('helvetica', 'B', 9)
+    pdf.set_xy(MARGIN + 4, fy + 1)
+    pdf.cell(CONTENT_W - 40, 4.5, "MOYENNE GÉNÉRALE", align='L')
+    pdf.set_xy(MARGIN, fy + 1)
+    pdf.cell(CONTENT_W - 4, 4.5, f"{calc['average']:.2f} / 100", align='R')
+    pdf.set_y(fy + footer_h + 2)
 
     if not bulletin_data.get('has_grades', True):
         pdf.set_x(MARGIN)
-        pdf.set_font('helvetica', 'I', 9)
+        pdf.set_font('helvetica', 'I', 8.5)
         pdf.set_text_color(*SLATE_700)
-        pdf.cell(0, 6, "Aucune note n'a été attribuée à cet élève pour ce trimestre.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(0, 5, "Aucune note n'a été attribuée à cet élève pour ce trimestre.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-    pdf.ln(6)
+    pdf.ln(3)
 
     # ------------------------------------------------------------------
     # 4. Vie scolaire (absences / retards) + Mention
@@ -305,9 +305,9 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
     vs_y = pdf.get_y()
     left_w = CONTENT_W * 0.62
     right_w = CONTENT_W - left_w
-    row_h = 8
+    row_h = 6.5
 
-    pdf.set_font('helvetica', '', 9.5)
+    pdf.set_font('helvetica', '', 9)
     pdf.set_text_color(*SLATE_900)
     for i, line in enumerate([f"Nombre d'absence(s) : {vie_scolaire.get('absences', 0)}",
                               f"Nombre de retard(s) : {vie_scolaire.get('retards', 0)}"]):
@@ -317,24 +317,24 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
 
     pdf.set_xy(MARGIN + left_w, vs_y)
     pdf.rounded_card(MARGIN + left_w, vs_y, right_w, row_h * 2, fill_color=SLATE_50, border_color=SLATE_200, radius=0)
-    pdf.set_font('helvetica', 'B', 8)
+    pdf.set_font('helvetica', 'B', 7.5)
     pdf.set_text_color(*SLATE_600)
-    pdf.set_xy(MARGIN + left_w, vs_y + 2)
-    pdf.cell(right_w, 4, "MENTION", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.set_xy(MARGIN + left_w, vs_y + 8)
-    pdf.set_font('helvetica', 'B', 12)
+    pdf.set_xy(MARGIN + left_w, vs_y + 1.5)
+    pdf.cell(right_w, 3.5, "MENTION", align='C', new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_xy(MARGIN + left_w, vs_y + 6.5)
+    pdf.set_font('helvetica', 'B', 11)
     pdf.set_text_color(*SLATE_900)
-    pdf.cell(right_w, 6, calc['status_label'], align='C')
+    pdf.cell(right_w, 5.5, calc['status_label'], align='C')
 
-    pdf.set_y(vs_y + row_h * 2 + 8)
+    pdf.set_y(vs_y + row_h * 2 + 5)
 
     # ------------------------------------------------------------------
     # 5. Global appreciation
     # ------------------------------------------------------------------
     appreciation = bulletin_data['appreciation'] or ''
-    appr_lines = _wrapped_lines(pdf, CONTENT_W - 14, appreciation, ('helvetica', 'I', 10))
-    appr_h = max(len(appr_lines), 1) * 5.6 + 10
-    if pdf.will_page_break(appr_h + 10):
+    appr_lines = _wrapped_lines(pdf, CONTENT_W - 14, appreciation, ('helvetica', 'I', 9.5))
+    appr_h = max(len(appr_lines), 1) * 5 + 7
+    if pdf.will_page_break(appr_h + 6):
         pdf.add_page()
 
     pdf.section_title("Appréciation du conseil de classe")
@@ -342,27 +342,33 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
     pdf.rounded_card(MARGIN, box_y, CONTENT_W, appr_h, fill_color=SLATE_50, border_color=SLATE_200)
     pdf.set_fill_color(*SLATE_400)
     pdf.rect(MARGIN, box_y, 2, appr_h, style='F', round_corners=('TOP_LEFT', 'BOTTOM_LEFT'), corner_radius=2)
-    pdf.set_xy(MARGIN + 6, box_y + 5)
-    pdf.set_font('helvetica', 'I', 10)
+    pdf.set_xy(MARGIN + 6, box_y + 3.5)
+    pdf.set_font('helvetica', 'I', 9.5)
     pdf.set_text_color(*SLATE_900)
-    pdf.multi_cell(CONTENT_W - 12, 5.6, appreciation, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.set_y(box_y + appr_h + 8)
+    pdf.multi_cell(CONTENT_W - 12, 5, appreciation, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_y(box_y + appr_h + 5)
 
     # ------------------------------------------------------------------
     # 6. Personalized orientation advice (optional block)
     # ------------------------------------------------------------------
     ai_reco = bulletin_data.get('ai_recommendation', {}).get('recommendation') if bulletin_data.get('ai_recommendation') else None
     if ai_reco:
+        # Cap the AI-generated text length so this section's height stays
+        # bounded regardless of how verbose the model's response is —
+        # essential to guarantee the whole bulletin fits on a single page.
+        MAX_AI_CHARS = 380
+        if len(ai_reco) > MAX_AI_CHARS:
+            cut = ai_reco[:MAX_AI_CHARS].rsplit(' ', 1)[0]
+            ai_reco = cut.rstrip('.,;: ') + '…'
+
         closing_note = (
-            "Nous invitons l'élève à se rapprocher du conseil pédagogique de l'établissement "
-            "pour échanger sur ces pistes et obtenir des réponses à toutes ses questions sur "
-            "les filières possibles et les métiers correspondants."
+            "Nous invitons l'élève à se rapprocher du conseil pédagogique pour échanger sur ces pistes."
         )
         full_text = f"{ai_reco}\n\n{closing_note}"
 
-        ai_lines = _wrapped_lines(pdf, CONTENT_W - 14, full_text, ('helvetica', '', 9.5))
-        ai_h = max(len(ai_lines), 1) * 5.2 + 10
-        if pdf.will_page_break(ai_h + 10):
+        ai_lines = _wrapped_lines(pdf, CONTENT_W - 14, full_text, ('helvetica', '', 8.5))
+        ai_h = max(len(ai_lines), 1) * 4.4 + 7
+        if pdf.will_page_break(ai_h + 6):
             pdf.add_page()
 
         pdf.section_title("Conseil d'orientation personnalisé")
@@ -370,11 +376,11 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
         pdf.rounded_card(MARGIN, box_y, CONTENT_W, ai_h, fill_color=SLATE_50, border_color=SLATE_200)
         pdf.set_fill_color(*SLATE_400)
         pdf.rect(MARGIN, box_y, 2, ai_h, style='F', round_corners=('TOP_LEFT', 'BOTTOM_LEFT'), corner_radius=2)
-        pdf.set_xy(MARGIN + 6, box_y + 5)
-        pdf.set_font('helvetica', '', 9.5)
+        pdf.set_xy(MARGIN + 6, box_y + 3.5)
+        pdf.set_font('helvetica', '', 8.5)
         pdf.set_text_color(*SLATE_900)
-        pdf.multi_cell(CONTENT_W - 12, 5.2, full_text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-        pdf.set_y(box_y + ai_h + 10)
+        pdf.multi_cell(CONTENT_W - 12, 4.4, full_text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.set_y(box_y + ai_h + 5)
 
     # ------------------------------------------------------------------
     # 7. Signature
@@ -382,7 +388,7 @@ def generate_bulletin_pdf(bulletin_data, output_path, upload_folder=None):
     if pdf.will_page_break(24):
         pdf.add_page()
     pdf.section_title("Signature du chef d'établissement")
-    line_y = pdf.get_y() + 14
+    line_y = pdf.get_y() + 9
     pdf.set_draw_color(*SLATE_400)
     pdf.set_line_width(0.2)
     pdf.line(PAGE_W - MARGIN - 70, line_y, PAGE_W - MARGIN, line_y)

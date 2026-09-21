@@ -336,7 +336,7 @@ export default function App() {
                     title="Centre de notifications"
                     style={{
                       position: 'relative', background: 'none', border: '1px solid var(--slate-200)',
-                      borderRadius: '8px', width: '40px', height: '40px', display: 'flex',
+                      borderRadius: '8px', width: '40px', height: '40px', padding: 0, display: 'flex',
                       alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
                     }}
                   >
