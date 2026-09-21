@@ -1,5 +1,4 @@
 from app.repositories.sql_repo import SQLRepository
-from app.models import ConversionScale
 from datetime import datetime
 
 class GradeService:

@@ -45,17 +45,20 @@ def test_student_metrics_and_ranking(app):
             class_id=seconde.id
         )
         
-        # Get Math subject (seeded)
+                # Get Math subject (seeded)
         math = SQLRepository.get_subject_by_name("Mathématiques")
         phys = SQLRepository.get_subject_by_name("Physique")
-        
+
+        # The admin is always authorized to record grades (see TeacherService.is_authorized)
+        admin = SQLRepository.get_user_by_email("admin@school.com")
+
         # 2. Enter grades for Student 1 (Jean) -> Math: 80, Phys: 90 -> Average: 85
-        GradeService.create_or_update_grade(student1.id, math.id, 80.0, "Trimestre 1", "2025-2026")
-        GradeService.create_or_update_grade(student1.id, phys.id, 90.0, "Trimestre 1", "2025-2026")
-        
+        GradeService.add_grade(admin, student1.id, math.id, 80.0, "Trimestre 1", "2025-2026", "Examen")
+        GradeService.add_grade(admin, student1.id, phys.id, 90.0, "Trimestre 1", "2025-2026", "Examen")
+
         # 3. Enter grades for Student 2 (Alice) -> Math: 95, Phys: 95 -> Average: 95
-        GradeService.create_or_update_grade(student2.id, math.id, 95.0, "Trimestre 1", "2025-2026")
-        GradeService.create_or_update_grade(student2.id, phys.id, 95.0, "Trimestre 1", "2025-2026")
+        GradeService.add_grade(admin, student2.id, math.id, 95.0, "Trimestre 1", "2025-2026", "Examen")
+        GradeService.add_grade(admin, student2.id, phys.id, 95.0, "Trimestre 1", "2025-2026", "Examen")
         
         # 4. Verify calculations for Student 1
         metrics1 = GradeService.calculate_student_metrics(student1.id, "Trimestre 1", "2025-2026")

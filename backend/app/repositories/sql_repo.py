@@ -3,7 +3,6 @@ from app.models import (
     TeacherAssignment, AttendanceSession, AttendanceRecord, HomeworkRecord, StudentNote,
     ScheduleSlot, TeacherAttendanceRecord, Notification
 )
-from datetime import datetime
 
 class SQLRepository:
     """

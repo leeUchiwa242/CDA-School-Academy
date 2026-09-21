@@ -1,6 +1,6 @@
 import bcrypt
 import jwt
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from flask import current_app
 from app.repositories.sql_repo import SQLRepository
 

@@ -29,7 +29,7 @@ def token_required(f):
                 return jsonify({'message': 'Utilisateur non trouvé.'}), 401
                 
             # Check for lockout status (just in case)
-            from datetime import datetime, timezone
+            from datetime import datetime
             if current_user.lockout_until:
                 # Compare naive or tz-aware depending on SQLite vs PG.
                 # To be safe, compare datetime.utcnow() with naive or convert both.
